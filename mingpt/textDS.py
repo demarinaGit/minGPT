@@ -21,7 +21,7 @@ class TextDataset(Dataset):
     where I is "ignore", as the transformer is reading the input sequence
     """
 
-    def __init__(self, data): 
+    def __init__(self, data, block_size): 
         chars = sorted(list(set(data)))
         data_size, vocab_size = len(data), len(chars)
         print('data has %d characters, %d unique.' % (data_size, vocab_size))
@@ -29,10 +29,12 @@ class TextDataset(Dataset):
         self.s2i = { ch:i for i,ch in enumerate(chars) }
         self.i2s = { i:ch for i,ch in enumerate(chars) }
         self.data = data
-        self.block_size = 20
+        self.block_size = block_size
+        self.vocab_size = vocab_size
+        self.data_size = data_size
     
     def __len__(self):
-        return 10000 # ...
+        return self.data_size # ...
     
     def get_vocab_size(self):
         return self.vocab_size
@@ -41,7 +43,7 @@ class TextDataset(Dataset):
         # the length of the sequence that will feed into transformer, 
         # containing concatenated input and the output, but -1 because
         # the transformer starts making predictions at the last input element
-        return 20
+        return self.block_size
 
     def __getitem__(self, idx): 
         
@@ -74,6 +76,8 @@ class TextDataset(Dataset):
 # trainer = Trainer(train_config, model, tds)
 # trainer.run()
 
+# context = text[200:220]
+# x = torch.tensor([tds.s2i[s] for s in context], dtype=torch.long)[None,...].to(trainer.device)
 # model.generate(idx = x , max_new_tokens=10)
 
 # [tds.i2s[i] for i in [ 1, 41, 44, 45, 53,  1, 12, 31, 39, 51, 49,  1, 20, 31, 48, 33, 39, 51,
